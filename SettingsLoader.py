@@ -23,5 +23,6 @@ def copy_and_rename(src, des, name):
 	# Copy the file
 	shutil.copy(src, des)
 
-if test:
+if __name__ == "__main__":
+    print("Running Test")
     configLoader()
