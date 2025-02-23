@@ -7,6 +7,7 @@ from PySide6.QtWidgets import (
     QPushButton,
     QLabel,
     QVBoxLayout,
+    QHBoxLayout,
     QWidget,
     QFileDialog,
     QLineEdit,
@@ -37,6 +38,7 @@ class MainWindow(QMainWindow):
         self.minimumSize()
 # Setup Windows
 class setupWindows(QMainWindow):
+    Index = 0
     def __init__(self):
         super().__init__()
         DPS = SUOS()
@@ -50,28 +52,47 @@ class setupWindows(QMainWindow):
         labelOne.setFont(LOF)
         self.TextBox = QLineEdit()
         self.TextBox.setText(DPS)
+        self.but = QPushButton("Next")
         layoutt = QVBoxLayout()
+        Textlayout = QHBoxLayout()
+        Textlayout.addWidget(self.TextBox)
+        Textlayout.addWidget(self.but)
+        Textlayout.setSpacing(10)
         layoutt.addWidget(labelOne)
         layoutt.addWidget(labelTwo)
-        layoutt.addWidget(self.TextBox)
+        layoutt.addLayout(Textlayout)
         container = QWidget()
         container.setLayout(layoutt)
         self.setMinimumSize(500,250)
         self.setBaseSize(650,500)
         self.setCentralWidget(container)
         self.TextBox.returnPressed.connect(self.Setuptextboxenter)
+        self.but.clicked.connect(self.nextbutton)
+    def nextbutton(self):
+        print("Next Button Clicked")
+        if self.Index != 3:
+            print("setup done")
+            return
+        self.TextBox.enterEvent(self.Setuptextboxenter)
     # When the enter key is pressed in the textbox
     def Setuptextboxenter(self):
         print("Enter Pressed")
         print(self.TextBox.text())
-        Settingdic["Pathtosteam"] = self.TextBox.text()
+        if self.Index == 0:
+            Settingdic["Pathtosteam"] = self.TextBox.text()
+        if self.Index == 1:
+            Settingdic["User"] = self.TextBox.text()
+        if self.Index == 2:
+            Settingdic["LocalImageRepostory"] = self.TextBox.text()
+        self.TextBox.clear()
+        self.Index += 1
         print(Settingdic)
+        return
 # When the enter key is pressed in the textbox
-
 # Finds to OS that is being used 
 def SUOS():
     if sys.platform == "win32":
-        OS = "windows"
+        OS = "Windows"
         Settingdic["OS"] = "Windows"
         DFPS = configL["DefaultSteamPaths"]["pathtosteamwin"]
     if sys.platform == "darwin":
