@@ -1,4 +1,5 @@
 import sys
+from pathlib import Path, PurePath 
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import (
     QApplication,
@@ -23,13 +24,8 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("Steam Artwork Manger")
 
         label = QLabel("Test")
-        button = QPushButton("Press Me!")
-        button.clicked.connect(buttonclicked)
         layout = QVBoxLayout()
         layout.addWidget(label)
-        layout.addWidget(button)
-        
-
         container = QWidget()
         container.setLayout(layout)
 
@@ -70,24 +66,33 @@ class setupWindows(QMainWindow):
         self.but.clicked.connect(self.nextbutton)
     def nextbutton(self):
         print("Next Button Clicked")
-        if self.Index != 3:
+        if self.Index == 3:
             print("setup done")
             return
-        self.TextBox.enterEvent(self.Setuptextboxenter)
+        self.Setuptextboxenter()
     # When the enter key is pressed in the textbox
     def Setuptextboxenter(self):
         print("Enter Pressed")
         print(self.TextBox.text())
         if self.Index == 0:
             Settingdic["Pathtosteam"] = self.TextBox.text()
+            self.TextBox.clear()
+            self.userfinder(Settingdic["Pathtosteam"])
         if self.Index == 1:
             Settingdic["User"] = self.TextBox.text()
+            self.TextBox.clear()
         if self.Index == 2:
             Settingdic["LocalImageRepostory"] = self.TextBox.text()
-        self.TextBox.clear()
+            self.TextBox.clear()
         self.Index += 1
         print(Settingdic)
         return
+    def userfinder(steamDir):
+        LoginPath = PurePath(steamDir, "config", "loginusers.vdf")
+        
+        print(LoginPath)
+        
+
 # When the enter key is pressed in the textbox
 # Finds to OS that is being used 
 def SUOS():
@@ -114,9 +119,6 @@ def SDLoder():
     print(Settingdic)
     return Settingdic
 
-def buttonclicked(self):
-        print("Clicked!",)
-        
 
 if __name__ == "__main__":
     app = QApplication(sys.argv)
