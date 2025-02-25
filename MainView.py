@@ -1,9 +1,12 @@
 import sys
+import vdf
 from pathlib import Path, PurePath 
+home = Path.home()
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import (
     QApplication,
     QDialog, 
+    QMessageBox,
     QMainWindow, 
     QPushButton,
     QLabel,
@@ -87,10 +90,37 @@ class setupWindows(QMainWindow):
         self.Index += 1
         print(Settingdic)
         return
-    def userfinder(steamDir):
-        LoginPath = PurePath(steamDir, "config", "loginusers.vdf")
-        
+    def userfinder(self,steamDir):
+        if steamDir != "C:\\Program Files (x86)\\Steam":
+            print("a")
+            print(home)
+            steamDir = PurePath(home ,steamDir)
+            LoginPath = PurePath(home ,steamDir, "config", "loginusers.vdf")
+        else:
+            print("b")
+            LoginPath = PurePath(steamDir, "config", "loginusers.vdf")
         print(LoginPath)
+        try:
+            with open(LoginPath, 'r', encoding='utf-8') as f:
+                data = vdf.load(f)
+        except FileNotFoundError:
+            print("File not found")
+            erdlg = QMessageBox.critical( self,
+            "Error",
+            "Error: File not found",
+            buttons=QMessageBox.Ok,
+            )
+            self.Index -= 1
+            return
+        users = data.get("users", {})
+        result = {}
+        for steam_id, user_data in users.items():
+            account_name = user_data.get("AccountName", "Unknown")
+            result[steam_id] = account_name
+        print(result)
+        return
+    
+
         
 
 # When the enter key is pressed in the textbox
