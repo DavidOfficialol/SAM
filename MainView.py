@@ -21,6 +21,7 @@ Settingdic = {}
 OS = ""
 DFPS = ""
 Setupdone = True
+ASUsers = {}
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -42,13 +43,13 @@ class setupWindows(QMainWindow):
         super().__init__()
         DPS = SUOS()
         self.setWindowTitle("S.A.M Setup")
-        labelOne = QLabel("The Path to steam")
-        labelOne.setAlignment(Qt.AlignCenter)
-        labelTwo = QLabel("The path to your steam installaion. Please make sure you include to full path to the steam folder eg. " + DPS)
-        labelTwo.setAlignment(Qt.AlignCenter)
-        LOF = labelOne.font()
+        self.labelOne = QLabel("The Path to steam")
+        self.labelOne.setAlignment(Qt.AlignCenter)
+        self.labelTwo = QLabel("The path to your steam installaion. Please make sure you include to full path to the steam folder eg. " + DPS)
+        self.labelTwo.setAlignment(Qt.AlignCenter)
+        LOF = self.labelOne.font()
         LOF.setPointSize(20)
-        labelOne.setFont(LOF)
+        self.labelOne.setFont(LOF)
         self.TextBox = QLineEdit()
         self.TextBox.setText(DPS)
         self.but = QPushButton("Next")
@@ -57,8 +58,8 @@ class setupWindows(QMainWindow):
         Textlayout.addWidget(self.TextBox)
         Textlayout.addWidget(self.but)
         Textlayout.setSpacing(10)
-        layoutt.addWidget(labelOne)
-        layoutt.addWidget(labelTwo)
+        layoutt.addWidget(self.labelOne)
+        layoutt.addWidget(self.labelTwo)
         layoutt.addLayout(Textlayout)
         container = QWidget()
         container.setLayout(layoutt)
@@ -78,10 +79,11 @@ class setupWindows(QMainWindow):
         print("Enter Pressed")
         print(self.TextBox.text())
         if self.Index == 0:
-
             Settingdic["Pathtosteam"] = self.TextBox.text()
             self.TextBox.clear()
             self.userfinder(Settingdic["Pathtosteam"])
+            self.labelOne.setText("Select User")
+            print("A")
         if self.Index == 1:
             Settingdic["User"] = self.TextBox.text()
             self.TextBox.clear()
@@ -101,7 +103,7 @@ class setupWindows(QMainWindow):
             print("File not found")
             erdlg = QMessageBox.critical( self,
             "Error",
-            "Error: File not found",
+            "Error: File not found please make sure you have the correct path to steam",
             buttons=QMessageBox.Ok,
             )
             self.Index -= 1
@@ -111,6 +113,7 @@ class setupWindows(QMainWindow):
         for steam_id, user_data in users.items():
             account_name = user_data.get("AccountName", "Unknown")
             result[steam_id] = account_name
+        ASUsers = result
         print(result)
         return
     
