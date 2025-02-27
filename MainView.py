@@ -44,7 +44,7 @@ class setupWindows(QMainWindow):
         self.setWindowTitle("S.A.M Setup")
         labelOne = QLabel("The Path to steam")
         labelOne.setAlignment(Qt.AlignCenter)
-        labelTwo = QLabel("The path to your steam installaion")
+        labelTwo = QLabel("The path to your steam installaion. Please make sure you include to full path to the steam folder eg. ", DPS)
         labelTwo.setAlignment(Qt.AlignCenter)
         LOF = labelOne.font()
         LOF.setPointSize(20)
@@ -78,6 +78,7 @@ class setupWindows(QMainWindow):
         print("Enter Pressed")
         print(self.TextBox.text())
         if self.Index == 0:
+
             Settingdic["Pathtosteam"] = self.TextBox.text()
             self.TextBox.clear()
             self.userfinder(Settingdic["Pathtosteam"])
@@ -90,15 +91,8 @@ class setupWindows(QMainWindow):
         self.Index += 1
         print(Settingdic)
         return
-    def userfinder(self,steamDir):
-        if steamDir != "C:\\Program Files (x86)\\Steam":
-            print("a")
-            print(home)
-            steamDir = PurePath(home ,steamDir)
-            LoginPath = PurePath(home ,steamDir, "config", "loginusers.vdf")
-        else:
-            print("b")
-            LoginPath = PurePath(steamDir, "config", "loginusers.vdf")
+    def userfinder(self,steamDir: str):
+        LoginPath = PurePath(steamDir, "config", "loginusers.vdf")
         print(LoginPath)
         try:
             with open(LoginPath, 'r', encoding='utf-8') as f:
@@ -133,7 +127,7 @@ def SUOS():
     if sys.platform == "darwin":
         OS = "MacOS"
         Settingdic["OS"] = "MacOS"
-        DFPS = configL["DefaultSteamPaths"]["pathtosteammac"]
+        DFPS = str(home) + configL["DefaultSteamPaths"]["pathtosteammac"]
     if sys.platform == "linux" or sys.platform == "linux2":
         OS = "Linux"
         Settingdic["OS"] = "Linux" 
