@@ -44,7 +44,7 @@ class setupWindows(QMainWindow):
         self.setWindowTitle("S.A.M Setup")
         labelOne = QLabel("The Path to steam")
         labelOne.setAlignment(Qt.AlignCenter)
-        labelTwo = QLabel("The path to your steam installaion. Please make sure you include to full path to the steam folder eg. ", DPS)
+        labelTwo = QLabel("The path to your steam installaion. Please make sure you include to full path to the steam folder eg. " + DPS)
         labelTwo.setAlignment(Qt.AlignCenter)
         LOF = labelOne.font()
         LOF.setPointSize(20)
