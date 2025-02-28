@@ -15,6 +15,7 @@ from PySide6.QtWidgets import (
     QWidget,
     QFileDialog,
     QLineEdit,
+    QComboBox,
 )
 from SettingsLoader import *
 Settingdic = {}
@@ -47,19 +48,29 @@ class setupWindows(QMainWindow):
         self.labelOne.setAlignment(Qt.AlignCenter)
         self.labelTwo = QLabel("The path to your steam installaion. Please make sure you include to full path to the steam folder eg. " + DPS)
         self.labelTwo.setAlignment(Qt.AlignCenter)
+        self.labelTwo.setWordWrap(True)
         LOF = self.labelOne.font()
         LOF.setPointSize(20)
         self.labelOne.setFont(LOF)
         self.TextBox = QLineEdit()
         self.TextBox.setText(DPS)
         self.but = QPushButton("Next")
+        self.Commbox = QComboBox()
+        self.Cbut = QPushButton("add")
+        self.Commbox.hide()
+        self.Cbut.hide()
         layoutt = QVBoxLayout()
         Textlayout = QHBoxLayout()
+        self.Commboxlayout = QHBoxLayout()
+        self.Commboxlayout.addWidget(self.Commbox)
+        self.Commboxlayout.addWidget(self.Cbut)
+        self.Commboxlayout.setSpacing(10)
         Textlayout.addWidget(self.TextBox)
         Textlayout.addWidget(self.but)
         Textlayout.setSpacing(10)
         layoutt.addWidget(self.labelOne)
         layoutt.addWidget(self.labelTwo)
+        layoutt.addLayout(self.Commboxlayout)
         layoutt.addLayout(Textlayout)
         container = QWidget()
         container.setLayout(layoutt)
@@ -68,13 +79,17 @@ class setupWindows(QMainWindow):
         self.setCentralWidget(container)
         self.TextBox.returnPressed.connect(self.Setuptextboxenter)
         self.but.clicked.connect(self.nextbutton)
+        self.Cbut.clicked.connect(self.addbutton)
+    # When the next button is clicked
     def nextbutton(self):
         print("Next Button Clicked")
         if self.Index == 3:
             print("setup done")
             return
         self.Setuptextboxenter()
+
     # When the enter key is pressed in the textbox
+    # It will check what index it is at and then set the setting to the value in the textbox and move to the next user input
     def Setuptextboxenter(self):
         print("Enter Pressed")
         print(self.TextBox.text())
@@ -83,6 +98,10 @@ class setupWindows(QMainWindow):
             self.TextBox.clear()
             self.userfinder(Settingdic["Pathtosteam"])
             self.labelOne.setText("Select User")
+            self.labelTwo.setText("Please select the user you want to use")
+            self.Commbox.addItems(self.result.values()) 
+            self.Commbox.show()
+            self.Cbut.show()
             print("A")
         if self.Index == 1:
             Settingdic["User"] = self.TextBox.text()
@@ -93,6 +112,13 @@ class setupWindows(QMainWindow):
         self.Index += 1
         print(Settingdic)
         return
+    
+    # When the add button is clicked
+    def addbutton(self):
+        print("Add Button Clicked")
+        self.TextBox.setText(self.Commbox.currentText() + ",")
+
+    # Load the loginusers.vdf file and get the users
     def userfinder(self,steamDir: str):
         LoginPath = PurePath(steamDir, "config", "loginusers.vdf")
         print(LoginPath)
@@ -109,12 +135,11 @@ class setupWindows(QMainWindow):
             self.Index -= 1
             return
         users = data.get("users", {})
-        result = {}
+        self.result = {}
         for steam_id, user_data in users.items():
             account_name = user_data.get("AccountName", "Unknown")
-            result[steam_id] = account_name
-        ASUsers = result
-        print(result)
+            self.result[steam_id] = account_name
+        print(self.result)
         return
     
 
