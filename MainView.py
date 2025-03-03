@@ -85,6 +85,15 @@ class setupWindows(QMainWindow):
         print("Next Button Clicked")
         if self.Index == 3:
             print("setup done")
+            Settingdic["setupmode"] = "False"
+            configL["AppSettings"]["setupmode"] = "False"
+            configL["Steam"]["Pathtosteam"] = Settingdic["Pathtosteam"]
+            configL["Steam"]["User"] = Settingdic["User"] 
+            configL["AppSettings"]["LocalImageRepostory"] = Settingdic["LocalImageRepostory"]
+            configWriter()
+            self.close()
+            SAMwindowMain = MainWindow()
+            SAMwindowMain.show()
             return
         self.Setuptextboxenter()
 
@@ -97,6 +106,9 @@ class setupWindows(QMainWindow):
             Settingdic["Pathtosteam"] = self.TextBox.text()
             self.TextBox.clear()
             self.userfinder(Settingdic["Pathtosteam"])
+            if self.Index < 0: # If the userfinder function fails it will return to the previous index and will not continue on
+                self.Index = 0
+                return
             self.labelOne.setText("Select User")
             self.labelTwo.setText("Please select the user you want to use")
             self.Commbox.addItems(self.result.values()) 
@@ -105,18 +117,33 @@ class setupWindows(QMainWindow):
             print("A")
         if self.Index == 1:
             Settingdic["User"] = self.TextBox.text()
+            Settingdic["User"] = Settingdic["User"].split(",")
+            print(Settingdic["User"])
             self.TextBox.clear()
+            self.labelOne.setText("Local Image Repostory")
+            self.labelTwo.setText("Please enter the path to the local image repostory you want to use. If you do not have one please leave this blank")
+            self.Commbox.clear()
+            self.Commbox.hide()
+            self.Cbut.hide()
         if self.Index == 2:
             Settingdic["LocalImageRepostory"] = self.TextBox.text()
             self.TextBox.clear()
+            self.labelOne.setText("Set up complete")
+            self.labelTwo.setText("Setup is now complete, click ''Finish'' to continuet to the main window")
+            self.TextBox.hide()
+            self.but.setText("Finish")
         self.Index += 1
         print(Settingdic)
         return
     
-    # When the add button is clicked
+    # When the add button is clicked it will add the current selected user to the textbox
     def addbutton(self):
         print("Add Button Clicked")
-        self.TextBox.setText(self.Commbox.currentText() + ",")
+        if self.TextBox.text() == "": # If the textbox is empty it will just add the current selected user
+            self.TextBox.setText(self.Commbox.currentText())
+            return
+        self.TextBox.setText(self.TextBox.text() + "," + self.Commbox.currentText()) # Else if the textbox is not empty it will add a comma and then the current selected user
+        return
 
     # Load the loginusers.vdf file and get the users
     def userfinder(self,steamDir: str):
@@ -133,6 +160,7 @@ class setupWindows(QMainWindow):
             buttons=QMessageBox.Ok,
             )
             self.Index -= 1
+            print(str(self.Index))
             return
         users = data.get("users", {})
         self.result = {}
