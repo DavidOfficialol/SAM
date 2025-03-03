@@ -36,7 +36,6 @@ class MainWindow(QMainWindow):
 
         self.setCentralWidget(container)
 
-        self.minimumSize()
 # Setup Windows
 class setupWindows(QMainWindow):
     Index = 0
@@ -88,16 +87,19 @@ class setupWindows(QMainWindow):
             Settingdic["setupmode"] = "False"
             configL["AppSettings"]["setupmode"] = "False"
             configL["Steam"]["Pathtosteam"] = Settingdic["Pathtosteam"]
-            configL["Steam"]["User"] = Settingdic["User"] 
+            for i in range(len(Settingdic["User"])):
+                if i == 0:
+                    configL["Steam"]["User"] = Settingdic["User"][i]
+                else:
+                    configL["Steam"]["User"] = configL["Steam"]["User"] + "," + Settingdic["User"][i]
             configL["AppSettings"]["LocalImageRepostory"] = Settingdic["LocalImageRepostory"]
             configWriter()
+            TempMW()
             self.close()
-            SAMwindowMain = MainWindow()
-            SAMwindowMain.show()
             return
         self.Setuptextboxenter()
 
-    # When the enter key is pressed in the textbox
+    # When the enter key is pressed in the textbox 
     # It will check what index it is at and then set the setting to the value in the textbox and move to the next user input
     def Setuptextboxenter(self):
         print("Enter Pressed")
@@ -199,7 +201,10 @@ def SDLoder():
     print(Settingdic)
     return Settingdic
 
-
+def TempMW():
+    MW = MainWindow()
+    MW.show()
+    return MW
 if __name__ == "__main__":
     app = QApplication(sys.argv)
 
@@ -207,7 +212,7 @@ if __name__ == "__main__":
     SUOS()
     SDLoder()
     print("Setup mode",configL["AppSettings"]["setupmode"])
-    if configL["AppSettings"]["setupmode"] == "True":
+    if configL["AppSettings"]["setupmode"] == "True" or configL["AppSettings"]["setupmode"] == "":
         Setupdone = False
         SAMSUPW = setupWindows()
         SAMSUPW.show()

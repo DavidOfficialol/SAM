@@ -1,8 +1,8 @@
 from pathlib import Path
 import configparser
 import shutil
-appVersion = "0.0.1"
-configVersion = "0.1"
+appVersion = "0.0.2"
+configVersion = "0.2"
 test = False
 configL = configparser.ConfigParser()
 configR = configparser.ConfigParser()
@@ -15,12 +15,30 @@ def configLoader():
         copy_and_rename(src="default.ini", des="config.ini", name="config.ini")
     
     configL.read("config.ini")
-    
-    if configL["AppSettings"]["AppVersion"] != appVersion:
+    if configL["AppSettings"]["configVersion"] != configVersion:
+        print("Config Version is not the same")
+        print("Updating config.ini")
+        configR.read("default.ini")
+        if configL["AppSettings"]["configVersion"] != configR["AppSettings"]["configVersion"]:
+            print("Config Version is not the same")
+            print("Updating config.ini")
+            configL["AppSettings"]["configVersion"] = configR["AppSettings"]["configVersion"]
+            configL["AppSettings"]["appVersion"] = appVersion
+            for section in configR.sections():
+                if section not in configL.sections():
+                    configL.add_section(section)
+                for key, value in configR.items(section):
+                    if key not in configL[section]:
+                        configL[section][key] = value
+            configWriter()
+    if configL["AppSettings"]["appVersion"] != appVersion:
         print("App Version is not the same")
         print("Updating config.ini")
-        copy_and_rename(src="default.ini", des="config.ini", name="config.ini")
-        configR.read("default.ini")
+        configL["AppSettings"]["appVersion"] = appVersion
+        configWriter()
+    configL.read("config.ini")
+    print("Config Loaded")
+
 
 def configWriter():
     with open("config.ini", "w") as configfile:
