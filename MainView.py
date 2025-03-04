@@ -28,13 +28,15 @@ class MainWindow(QMainWindow):
         super().__init__()
         self.setWindowTitle("Steam Artwork Manger")
 
-        label = QLabel("Test")
+        self.label = QLabel("Work in progress")
+        self.label.setAlignment(Qt.AlignCenter)
         layout = QVBoxLayout()
-        layout.addWidget(label)
-        container = QWidget()
-        container.setLayout(layout)
-
-        self.setCentralWidget(container)
+        layout.addWidget(self.label)
+        self.container = QWidget()
+        self.container.setLayout(layout)
+        self.setMinimumSize(500,250)
+        self.setBaseSize(800,700)
+        self.setCentralWidget(self.container)
 
 # Setup Windows
 class setupWindows(QMainWindow):
@@ -94,7 +96,9 @@ class setupWindows(QMainWindow):
                     configL["Steam"]["User"] = configL["Steam"]["User"] + "," + Settingdic["User"][i]
             configL["AppSettings"]["LocalImageRepostory"] = Settingdic["LocalImageRepostory"]
             configWriter()
-            TempMW()
+            MW = MainWindow()
+            MW.show() # Bug here, when the setup is done it will not show the main window and will just close the setup window ¯\_(ツ)_/¯, I will fix this later
+            # Temfix: just rerun the program and the main window will show
             self.close()
             return
         self.Setuptextboxenter()
@@ -120,6 +124,7 @@ class setupWindows(QMainWindow):
         if self.Index == 1:
             Settingdic["User"] = self.TextBox.text()
             Settingdic["User"] = Settingdic["User"].split(",")
+            Settingdic["SteamID"] = list(self.result.keys())[list(self.result.values()).index(Settingdic["User"][0])]
             print(Settingdic["User"])
             self.TextBox.clear()
             self.labelOne.setText("Local Image Repostory")
