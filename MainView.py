@@ -23,6 +23,7 @@ OS = ""
 DFPS = ""
 Setupdone = True
 ASUsers = {}
+game_listdic = []
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -30,13 +31,58 @@ class MainWindow(QMainWindow):
 
         self.label = QLabel("Work in progress")
         self.label.setAlignment(Qt.AlignCenter)
+        self.button = QPushButton("Get list of games")
+        self.button.clicked.connect(self.getlistofgames)
         layout = QVBoxLayout()
         layout.addWidget(self.label)
+        layout.addWidget(self.button)
         self.container = QWidget()
         self.container.setLayout(layout)
         self.setMinimumSize(500,250)
         self.setBaseSize(800,700)
         self.setCentralWidget(self.container)
+
+
+    def getlistofgames(self, steamDir: str):
+        print("Getting list of games")
+#        library_folders_path = PurePath(steamDir, "steamapps", "libraryfolders.vdf")
+#        try:
+#            with open(library_folders_path, 'r', encoding='utf-8') as f:
+#                library_folders = vdf.load(f)
+#        except FileNotFoundError:
+#            print("Library folders file not found")
+#            return []
+#
+#        game_list = []
+#        for folder in library_folders.get("libraryfolders", {}).values():
+#            if isinstance(folder, dict):
+#                folder_path = folder.get("path", "")
+#            if folder_path:
+#                apps_path = PurePath(folder_path, "steamapps")
+#                for app_manifest in Path(apps_path).glob("appmanifest_*.acf"):
+#                    try:
+#                     with open(app_manifest, 'r', encoding='utf-8') as f:
+#                            app_data = vdf.load(f)
+#                            game_list.append(app_data.get("AppState", {}).get("name", "Unknown"))
+#                    except FileNotFoundError:
+#                        print("App manifest file not found")
+#                        continue
+        # Add non-steam games
+#        shortcuts_path = PurePath(steamDir, "userdata", "config", "shortcuts.vdf")
+#        print(shortcuts_path)
+#        for shortcut_file in Path().glob(str(shortcuts_path)):
+#            try:
+#                with open(shortcut_file, 'rb') as f:
+#                    shortcuts_data = vdf.binary_load(f)
+#                    for shortcut in shortcuts_data.get("shortcuts", {}).values():
+#                        game_list.append(shortcut.get("AppName", "Unknown"))
+#            except FileNotFoundError:
+#                continue
+#
+#        print("Games found:", game_list)
+#        game_listdic = game_list
+        return
+
 
 # Setup Windows
 class setupWindows(QMainWindow):
