@@ -1,5 +1,6 @@
 import sys
 import vdf
+import math
 from pathlib import Path, PurePath 
 home = Path.home()
 from PySide6.QtCore import QSize, Qt
@@ -42,9 +43,9 @@ class MainWindow(QMainWindow):
         self.setBaseSize(800,700)
         self.setCentralWidget(self.container)
     def GLL(self):
-        self.getlistofgames(Settingdic["Pathtosteam"], Settingdic["SteamID"])
+        self.getlistofgames(Settingdic["Pathtosteam"], Settingdic["SteamID"], Settingdic["accountID"])
         return
-    def getlistofgames(self, steamDir: str, SteamID: list):
+    def getlistofgames(self, steamDir: str, SteamID: list, accountID: list):
         
         print("Getting list of games")
         print(steamDir)
@@ -72,17 +73,17 @@ class MainWindow(QMainWindow):
                         print("App manifest file not found")
                         continue
         #Add non-steam games
-        for SteamID in SteamID:
-            shortcuts_path = PurePath(steamDir, "userdata",SteamID, "config", "shortcuts.vdf")
+        print(game_list)
+        for i in range(len(SteamID)):
+            shortcuts_path = PurePath(steamDir, "userdata", accountID, "config", "shortcuts.vdf")
             print(shortcuts_path)
-            for shortcut_file in Path().glob(str(shortcuts_path)):
-                try:
-                    with open(shortcut_file, 'rb') as f:
-                        shortcuts_data = vdf.binary_load(f)
-                        for shortcut in shortcuts_data.get("shortcuts", {}).values():
-                            game_list.append(shortcut.get("AppName", "Unknown"))
-                except FileNotFoundError:
-                    continue
+            try:
+                with open(shortcuts_path, 'rb') as f:
+                    shortcuts_data = vdf.binary_load(f)
+                    for shortcut in shortcuts_data.get("shortcuts", {}).values():
+                        game_list.append(shortcut.get("AppName", "Unknown"))
+            except FileNotFoundError:
+                continue
 
         print("Games found:", game_list)
         game_listdic = game_list
@@ -144,9 +145,11 @@ class setupWindows(QMainWindow):
                 if i == 0:
                     configL["Steam"]["User"] = Settingdic["User"][i]
                     configL["Steam"]["SteamID"] = Settingdic["SteamID"][i]
+                    configL["Steam"]["accountID"] = str(Settingdic["accountID"][i]) 
                 else:
                     configL["Steam"]["User"] = configL["Steam"]["User"] + "," + Settingdic["User"][i]
                     configL["Steam"]["SteamID"] = configL["Steam"]["SteamID"] + "," + Settingdic["SteamID"][i]
+                    configL["Steam"]["accountID"] = configL["Steam"]["accountID"] + "," + str(Settingdic["accountID"][i])
             configL["AppSettings"]["LocalImageRepostory"] = Settingdic["LocalImageRepostory"]
             configWriter()
             MW = MainWindow()
@@ -177,8 +180,8 @@ class setupWindows(QMainWindow):
         if self.Index == 1:
             Settingdic["User"] = self.TextBox.text()
             Settingdic["User"] = Settingdic["User"].split(",")
-            for i in range(len(Settingdic["User"])):
-                Settingdic["SteamID"] = list(self.result.keys())
+            Settingdic["SteamID"] = list(self.result.keys())
+            Settingdic["accountID"] = self.accountID
             print(Settingdic["User"])
             print(Settingdic["User"])
             self.TextBox.clear()
@@ -230,6 +233,10 @@ class setupWindows(QMainWindow):
             account_name = user_data.get("AccountName", "Unknown")
             self.result[steam_id] = account_name
         print(self.result)
+        self.accountID = []
+        for i in range(len(self.result)):
+            self.accountID.append(int(list(self.result.keys())[i]) - 76561197960265728)
+            print(self.accountID)
         return
     
 
@@ -258,6 +265,8 @@ def SDLoder():
     Settingdic["LocalImageRepostory"] = configL["AppSettings"]["LocalImageRepostory"]
     Settingdic["Pathtosteam"] = configL["Steam"]["Pathtosteam"]
     Settingdic["User"] = configL["Steam"]["User"]
+    Settingdic["SteamID"] = configL["Steam"]["SteamID"]
+    Settingdic["accountID"] = configL["Steam"]["accountID"]
     print(Settingdic)
     return Settingdic
 
