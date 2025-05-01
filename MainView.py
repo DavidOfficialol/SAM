@@ -114,6 +114,7 @@ class MainWindow(QMainWindow):
 
 # Setup Windows
 class setupWindows(QMainWindow):
+    """Steup window for the program"""
     Index = 0
     def __init__(self):
         super().__init__()
@@ -174,9 +175,8 @@ class setupWindows(QMainWindow):
                     configL["Steam"]["accountID"] = configL["Steam"]["accountID"] + "," + str(Settingdic["accountID"][i])
             configL["AppSettings"]["LocalImageRepostory"] = Settingdic["LocalImageRepostory"]
             configWriter()
-            MW = MainWindow()
-            MW.show() # Bug here, when the setup is done it will not show the main window and will just close the setup window ¯\_(ツ)_/¯, I will fix this later
-            # Temfix: just rerun the program and the main window will show
+            self.MW = MainWindow()
+            self.MW.show() # Fixed add self. berfore MW
             self.close()
             return
         self.Setuptextboxenter()
