@@ -2,6 +2,7 @@ import sys
 import vdf
 import math
 from pathlib import Path, PurePath 
+import glob
 home = Path.home()
 from PySide6.QtCore import QSize, Qt
 from PySide6.QtWidgets import (
@@ -18,13 +19,24 @@ from PySide6.QtWidgets import (
     QLineEdit,
     QComboBox,
 )
+import logging
 from SettingsLoader import *
+from datetime import datetime
 Settingdic = {}
 OS = ""
 DFPS = ""
 Setupdone = True
 ASUsers = {}
-game_listdic = []
+game_listdic = {}
+Now = datetime.now()
+# Set up logging
+logging.basicConfig(
+    filename="SAM.log",
+    filemode="a",
+    level=logging.DEBUG,
+    format="%(asctime)s - %(levelname)s - %(message)s",
+)
+
 class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
@@ -43,22 +55,23 @@ class MainWindow(QMainWindow):
         self.setBaseSize(800,700)
         self.setCentralWidget(self.container)
     def GLL(self):
-        self.getlistofgames(Settingdic["Pathtosteam"], Settingdic["SteamID"], Settingdic["accountID"])
+        game_listdic = self.getlistofgames(Settingdic["Pathtosteam"], Settingdic["SteamID"], Settingdic["accountID"])
+        self.SteamImagelibary(Settingdic["Pathtosteam"])
         return
     def getlistofgames(self, steamDir: str, SteamID: list, accountID: list):
         
-        print("Getting list of games")
-        print(steamDir)
+        logging.info("Getting list of games")
+        logging.debug(steamDir)
         library_folders_path = PurePath(steamDir ,"steamapps", "libraryfolders.vdf")
-        print(library_folders_path)
+        logging.debug(library_folders_path)
         try:
             with open(library_folders_path, 'r', encoding='utf-8') as f:
                 library_folders = vdf.load(f)
         except FileNotFoundError:
-            print("Library folders file not found")
+            logging.warning("Library folders file not found")
             return []
 
-        game_list = []
+        game_list = {}
         for folder in library_folders.get("libraryfolders", {}).values():
             if isinstance(folder, dict):
                 folder_path = folder.get("path", "")
@@ -68,26 +81,35 @@ class MainWindow(QMainWindow):
                     try:
                      with open(app_manifest, 'r', encoding='utf-8') as f:
                             app_data = vdf.load(f)
-                            game_list.append(app_data.get("AppState", {}).get("name", "Unknown"))
+                            game_list[app_data.get("AppState", {}).get("appid", "0")] = app_data.get("AppState", {}).get("name", "Unknown")
                     except FileNotFoundError:
-                        print("App manifest file not found")
+                        logging.error("App manifest file not found")
                         continue
         #Add non-steam games
-        print(game_list)
+        logging.info("steam games added")
+        logging.debug(game_list)
         for i in range(len(SteamID)):
             shortcuts_path = PurePath(steamDir, "userdata", accountID, "config", "shortcuts.vdf")
-            print(shortcuts_path)
             try:
                 with open(shortcuts_path, 'rb') as f:
                     shortcuts_data = vdf.binary_load(f)
                     for shortcut in shortcuts_data.get("shortcuts", {}).values():
-                        game_list.append(shortcut.get("AppName", "Unknown"))
+                        game_list[shortcut.get("appid", "0")] = shortcut.get("appname", "Unknown")
             except FileNotFoundError:
+                logging.warning("Shortcuts file not found for user " + str(SteamID) + " ,this is normal if you dont have any non-steam games")
                 continue
 
-        print("Games found:", game_list)
-        game_listdic = game_list
-        return
+        logging.info("Non-steam games added. all games added")
+        logging.debug("Games found:", game_list)
+        return game_list
+    def SteamImagelibary(self, steamDir: str):
+        libImage = []
+        ILCP = PurePath(steamDir, "appcache", "librarycache")
+        for iLibCache in glob.glob(str(ILCP) + "/*"):
+            libImage.append(iLibCache.split("/")[-1])
+        logging.info("Library Cache Images recorded")
+        logging.debug(libImage)
+
 
 
 # Setup Windows
@@ -135,9 +157,9 @@ class setupWindows(QMainWindow):
         self.Cbut.clicked.connect(self.addbutton)
     # When the next button is clicked
     def nextbutton(self):
-        print("Next Button Clicked")
+        logging.debug("Next Button Clicked")
         if self.Index == 3:
-            print("setup done")
+            logging.info("setup done")
             Settingdic["setupmode"] = "False"
             configL["AppSettings"]["setupmode"] = "False"
             configL["Steam"]["Pathtosteam"] = Settingdic["Pathtosteam"]
@@ -162,8 +184,8 @@ class setupWindows(QMainWindow):
     # When the enter key is pressed in the textbox 
     # It will check what index it is at and then set the setting to the value in the textbox and move to the next user input
     def Setuptextboxenter(self):
-        print("Enter Pressed")
-        print(self.TextBox.text())
+        logging.debug("Enter Pressed")
+        logging.debug(self.TextBox.text())
         if self.Index == 0:
             Settingdic["Pathtosteam"] = self.TextBox.text()
             self.TextBox.clear()
@@ -176,14 +198,14 @@ class setupWindows(QMainWindow):
             self.Commbox.addItems(self.result.values()) 
             self.Commbox.show()
             self.Cbut.show()
-            print("A")
+            logging.debug("A")
         if self.Index == 1:
             Settingdic["User"] = self.TextBox.text()
             Settingdic["User"] = Settingdic["User"].split(",")
             Settingdic["SteamID"] = list(self.result.keys())
             Settingdic["accountID"] = self.accountID
-            print(Settingdic["User"])
-            print(Settingdic["User"])
+            logging.debug(Settingdic["User"])
+            logging.debug(Settingdic["User"])
             self.TextBox.clear()
             self.labelOne.setText("Local Image Repostory")
             self.labelTwo.setText("Please enter the path to the local image repostory you want to use. If you do not have one please leave this blank")
@@ -198,12 +220,12 @@ class setupWindows(QMainWindow):
             self.TextBox.hide()
             self.but.setText("Finish")
         self.Index += 1
-        print(Settingdic)
+        logging.info(Settingdic)
         return
     
     # When the add button is clicked it will add the current selected user to the textbox
     def addbutton(self):
-        print("Add Button Clicked")
+        logging.debug("Add Button Clicked")
         if self.TextBox.text() == "": # If the textbox is empty it will just add the current selected user
             self.TextBox.setText(self.Commbox.currentText())
             return
@@ -213,30 +235,30 @@ class setupWindows(QMainWindow):
     # Load the loginusers.vdf file and get the users
     def userfinder(self,steamDir: str):
         LoginPath = PurePath(steamDir, "config", "loginusers.vdf")
-        print(LoginPath)
+        logging.debug(LoginPath)
         try:
             with open(LoginPath, 'r', encoding='utf-8') as f:
                 data = vdf.load(f)
         except FileNotFoundError:
-            print("File not found")
+            logging.warning("File not found")
             erdlg = QMessageBox.critical( self,
             "Error",
             "Error: File not found please make sure you have the correct path to steam",
             buttons=QMessageBox.Ok,
             )
             self.Index -= 1
-            print(str(self.Index))
+            logging.debug(str(self.Index))
             return
         users = data.get("users", {})
         self.result = {}
         for steam_id, user_data in users.items():
             account_name = user_data.get("AccountName", "Unknown")
             self.result[steam_id] = account_name
-        print(self.result)
+        logging.debug(self.result)
         self.accountID = []
         for i in range(len(self.result)):
             self.accountID.append(int(list(self.result.keys())[i]) - 76561197960265728)
-            print(self.accountID)
+            logging.debug(self.accountID)
         return
     
 
@@ -257,7 +279,7 @@ def SUOS():
         OS = "Linux"
         Settingdic["OS"] = "Linux" 
         DFPS = configL["DefaultSteamPaths"]["pathtosteamlinux"]
-    print("OS",OS,"DFPS",DFPS)
+    logging.info("OS",str(OS),"DFPS",str(DFPS))
     return DFPS
 
 def SDLoder():
@@ -267,7 +289,7 @@ def SDLoder():
     Settingdic["User"] = configL["Steam"]["User"]
     Settingdic["SteamID"] = configL["Steam"]["SteamID"]
     Settingdic["accountID"] = configL["Steam"]["accountID"]
-    print(Settingdic)
+    logging.info(Settingdic)
     return Settingdic
 
 def TempMW():
@@ -275,12 +297,14 @@ def TempMW():
     MW.show()
     return MW
 if __name__ == "__main__":
+    logging.info("Starting SAM at" + str(Now))
     app = QApplication(sys.argv)
 
     configLoader()
+    logging.info("Config loaded")
     SUOS()
     SDLoder()
-    print("Setup mode",configL["AppSettings"]["setupmode"])
+    logging.info("Setup mode",str(configL["AppSettings"]["setupmode"]))
     if configL["AppSettings"]["setupmode"] == "True" or configL["AppSettings"]["setupmode"] == "":
         Setupdone = False
         SAMSUPW = setupWindows()
