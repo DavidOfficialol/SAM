@@ -9,3 +9,7 @@ class twobythreeWCImage(QtWidgets.QWidget):
     """
     def __init__(self, parent=None):
         super().__init__(parent)
+        self.label = QtWidgets.QLabel("Test")
+        self.label.setAlignment(Qt.AlignCenter)
+        self.label.setWordWrap(True)
+    

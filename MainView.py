@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
 )
 import logging
 from SettingsLoader import *
+from twoby3Image import twobythreeWCImage
 from datetime import datetime
 Settingdic = {}
 OS = ""
@@ -33,7 +34,7 @@ Now = datetime.now()
 logging.basicConfig(
     filename="SAM.log",
     filemode="a",
-    level=logging.DEBUG,
+    level=logging.INFO,
     format="%(asctime)s - %(levelname)s - %(message)s",
 )
 
@@ -41,7 +42,8 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Steam Artwork Manger")
-
+        self.twoByThree = twobythreeWCImage(self)
+        self.twoByThree.setMinimumSize(600,900)
         self.label = QLabel("Work in progress")
         self.label.setAlignment(Qt.AlignCenter)
         self.button = QPushButton("Get list of games")
@@ -289,21 +291,30 @@ def SDLoder():
     Settingdic["User"] = configL["Steam"]["User"]
     Settingdic["SteamID"] = configL["Steam"]["SteamID"]
     Settingdic["accountID"] = configL["Steam"]["accountID"]
+    Settingdic["Test"] = configL["AppSettings"]["Test"]
     logging.info(Settingdic)
     return Settingdic
 
-def TempMW():
-    MW = MainWindow()
-    MW.show()
-    return MW
+
 if __name__ == "__main__":
-    logging.info("Starting SAM at" + str(Now))
+    logging.info("Starting SAM at " + str(Now))
     app = QApplication(sys.argv)
 
     configLoader()
     logging.info("Config loaded")
     SUOS()
     SDLoder()
+    logging.info("Settings loaded")
+    if Settingdic["Test"] == "True":
+        logging.info("Test mode toggled")
+        logging.basicConfig(
+        filename="SAM.log",
+        filemode="a",
+        level=logging.DEBUG,
+        format="%(asctime)s - %(levelname)s - %(message)s",
+        force=True,
+        )
+        logging.debug("Test/debug mode enabled")
     logging.info("Setup mode",str(configL["AppSettings"]["setupmode"]))
     if configL["AppSettings"]["setupmode"] == "True" or configL["AppSettings"]["setupmode"] == "":
         Setupdone = False
