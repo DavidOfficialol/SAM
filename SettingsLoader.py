@@ -1,6 +1,8 @@
 from pathlib import Path
 import configparser
 import shutil
+import logging
+
 appVersion = "0.0.2"
 configVersion = "0.2"
 test = False
@@ -10,14 +12,18 @@ def configLoader():
     my_file = Path("config.ini")
     if my_file.is_file():
         print("config.ini found")
+        logging.info(__name__ + " - config.ini found",)
     else:
         print("File not found making config.ini with default")
+        logging.info("File not found making config.ini with default")
         copy_and_rename(src="default.ini", des="config.ini", name="config.ini")
     
     configL.read("config.ini")
     if configL["AppSettings"]["configVersion"] != configVersion:
         print("Config Version is not the same")
+        logging.info("Config Version is not the same")
         print("Updating config.ini")
+        logging.info("Updating config.ini")
         configR.read("default.ini")
         if configL["AppSettings"]["configVersion"] != configR["AppSettings"]["configVersion"]:
             print("Config Version is not the same")
@@ -33,10 +39,13 @@ def configLoader():
             configWriter()
     if configL["AppSettings"]["appVersion"] != appVersion:
         print("App Version is not the same")
+        logging.info(__name__ + " - App Version is not the same")
         print("Updating config.ini")
+        logging.info(__name__ + " - Updating config.ini")
         configL["AppSettings"]["appVersion"] = appVersion
         configWriter()
     configL.read("config.ini")
+    logging.info(__name__ +" - Config Loaded")
     print("Config Loaded")
 
 

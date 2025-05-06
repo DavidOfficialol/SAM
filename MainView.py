@@ -42,13 +42,14 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Steam Artwork Manger")
-        self.twoByThree = twobythreeWCImage(self)
+        self.twoByThree = twobythreeWCImage(imageP="PurePath(/Users/davidofficial/Library/Application Support/Steam/appcache/librarycache/1703340/library_600x900.jpg", caption="Test")
         self.twoByThree.setMinimumSize(600,900)
         self.label = QLabel("Work in progress")
         self.label.setAlignment(Qt.AlignCenter)
         self.button = QPushButton("Get list of games")
         self.button.clicked.connect(self.GLL)
         layout = QVBoxLayout()
+        layout.addWidget(self.twoByThree)
         layout.addWidget(self.label)
         layout.addWidget(self.button)
         self.container = QWidget()
@@ -64,6 +65,9 @@ class MainWindow(QMainWindow):
         
         logging.info("Getting list of games")
         logging.debug(steamDir)
+        logging.debug(str(SteamID))
+        logging.debug(str(accountID))
+        # Check if the steam directory exists
         library_folders_path = PurePath(steamDir ,"steamapps", "libraryfolders.vdf")
         logging.debug(library_folders_path)
         try:
@@ -90,7 +94,10 @@ class MainWindow(QMainWindow):
         #Add non-steam games
         logging.info("steam games added")
         logging.debug(game_list)
+        SteamID.append("0")
+        print(SteamID)
         for i in range(len(SteamID)):
+            logging.debug(str(i))
             shortcuts_path = PurePath(steamDir, "userdata", accountID, "config", "shortcuts.vdf")
             try:
                 with open(shortcuts_path, 'rb') as f:
@@ -98,8 +105,9 @@ class MainWindow(QMainWindow):
                     for shortcut in shortcuts_data.get("shortcuts", {}).values():
                         game_list[shortcut.get("appid", "0")] = shortcut.get("appname", "Unknown")
             except FileNotFoundError:
-                logging.warning("Shortcuts file not found for user " + str(SteamID) + " ,this is normal if you dont have any non-steam games")
+                logging.warning("Shortcuts file not found for user " + str(accountID) + " ,this is normal if you dont have any non-steam games")
                 continue
+            
 
         logging.info("Non-steam games added. all games added")
         logging.debug("Games found:", game_list)
@@ -281,7 +289,7 @@ def SUOS():
         OS = "Linux"
         Settingdic["OS"] = "Linux" 
         DFPS = configL["DefaultSteamPaths"]["pathtosteamlinux"]
-    logging.info("OS",str(OS),"DFPS",str(DFPS))
+    logging.info("OS: " + str(OS) + " ,DFPS: " + str(DFPS))
     return DFPS
 
 def SDLoder():
@@ -315,7 +323,7 @@ if __name__ == "__main__":
         force=True,
         )
         logging.debug("Test/debug mode enabled")
-    logging.info("Setup mode",str(configL["AppSettings"]["setupmode"]))
+    logging.info("Setup mode" + str(configL["AppSettings"]["setupmode"]))
     if configL["AppSettings"]["setupmode"] == "True" or configL["AppSettings"]["setupmode"] == "":
         Setupdone = False
         SAMSUPW = setupWindows()
