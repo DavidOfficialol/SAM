@@ -8,7 +8,7 @@ class twobythreeWCImage(QtWidgets.QWidget):
     (600x900 Steam image)
     If the image is not set, it will display the caption on a gray backgroud.
     """
-    def __init__(self, parent=None, imageP="", caption=""):
+    def __init__(self, parent=None, imageP= str, caption="Test"):
         
         super().__init__(parent)
         self.label = QtWidgets.QLabel()
@@ -26,5 +26,5 @@ class twobythreeWCImage(QtWidgets.QWidget):
         self.label.setTextInteractionFlags(Qt.TextBrowserInteraction)
         self.label.setOpenExternalLinks(True)
         self.label.setTextFormat(Qt.RichText)   
-        
+
     
