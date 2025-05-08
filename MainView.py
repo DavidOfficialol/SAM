@@ -14,6 +14,7 @@ from PySide6.QtWidgets import (
     QLabel,
     QVBoxLayout,
     QHBoxLayout,
+    QGridLayout,
     QWidget,
     QFileDialog,
     QLineEdit,
@@ -29,6 +30,7 @@ DFPS = ""
 Setupdone = True
 ASUsers = {}
 game_listdic = {}
+libimagelist = []
 Now = datetime.now()
 # Set up logging
 logging.basicConfig(
@@ -42,24 +44,43 @@ class MainWindow(QMainWindow):
     def __init__(self):
         super().__init__()
         self.setWindowTitle("Steam Artwork Manger")
-        self.twoByThree = twobythreeWCImage(imageP="PurePath(/Users/davidofficial/Library/Application Support/Steam/appcache/librarycache/1703340/library_600x900.jpg", caption="Test")
-        self.twoByThree.setMinimumSize(600,900)
+        self.LibgridLayout = QGridLayout()
+        self.LibgridLayout.setSpacing(10)
+        self.LibgridLayout.setContentsMargins(0, 0, 0, 0)
+        self.LibgridLayout.setSizeConstraint(QGridLayout.SetMinimumSize)
+        self.twoByThree = twobythreeWCImage(imageP="/Users/davidofficial/Library/Application Support/Steam/appcache/librarycache/1703340/library_600x900.jpg", caption="Test")
+        self.twoByThree.setMaximumSize(300,450)
         self.label = QLabel("Work in progress")
         self.label.setAlignment(Qt.AlignCenter)
         self.button = QPushButton("Get list of games")
         self.button.clicked.connect(self.GLL)
-        layout = QVBoxLayout()
-        layout.addWidget(self.twoByThree)
-        layout.addWidget(self.label)
-        layout.addWidget(self.button)
+        self.layout = QVBoxLayout()
+        self.layout.addWidget(self.twoByThree)
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.button)
         self.container = QWidget()
-        self.container.setLayout(layout)
-        self.setMinimumSize(500,250)
+        self.container.setLayout(self.layout)
+        self.setMinimumSize(500,500)
         self.setBaseSize(800,700)
         self.setCentralWidget(self.container)
     def GLL(self):
         game_listdic = self.getlistofgames(Settingdic["Pathtosteam"], Settingdic["SteamID"], Settingdic["accountID"])
-        self.SteamImagelibary(Settingdic["Pathtosteam"])
+        libimagelist = self.SteamImagelibary(Settingdic["Pathtosteam"])
+        logging.debug(len(libimagelist))
+        GDK = []
+        for key in game_listdic.keys():
+            GDK.append(key)
+            logging.debug(GDK)
+        for i in range(5):
+            self.LibgridLayout.addWidget(twobythreeWCImage(imageP=str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")),caption="Test"), math.floor(i/3), i%3)
+        self.layout.removeWidget(self.twoByThree)
+        self.layout.removeWidget(self.label)
+        self.layout.removeWidget(self.button)
+        self.layout.addLayout(self.LibgridLayout)
+        self.layout.addWidget(self.label)
+        self.layout.addWidget(self.button)
+        self.layout.addWidget(self.twoByThree)
+        self.label.setText("List of games loaded")
         return
     def getlistofgames(self, steamDir: str, SteamID: list, accountID: list):
         
@@ -94,12 +115,11 @@ class MainWindow(QMainWindow):
         #Add non-steam games
         logging.info("steam games added")
         logging.debug(game_list)
-        SteamID.append("0")
         print(SteamID)
         for i in range(len(SteamID)):
             logging.debug(str(i))
-            shortcuts_path = PurePath(steamDir, "userdata", accountID, "config", "shortcuts.vdf")
             try:
+                shortcuts_path = PurePath(steamDir, "userdata", accountID[i], "config", "shortcuts.vdf")
                 with open(shortcuts_path, 'rb') as f:
                     shortcuts_data = vdf.binary_load(f)
                     for shortcut in shortcuts_data.get("shortcuts", {}).values():
@@ -107,10 +127,13 @@ class MainWindow(QMainWindow):
             except FileNotFoundError:
                 logging.warning("Shortcuts file not found for user " + str(accountID) + " ,this is normal if you dont have any non-steam games")
                 continue
+            except IndexError:
+                logging.error("Index out of range for user " + str(accountID) + "")
+                continue
             
 
         logging.info("Non-steam games added. all games added")
-        logging.debug("Games found:", game_list)
+        logging.debug("Games found:" + str(game_list))
         return game_list
     def SteamImagelibary(self, steamDir: str):
         libImage = []
@@ -119,6 +142,7 @@ class MainWindow(QMainWindow):
             libImage.append(iLibCache.split("/")[-1])
         logging.info("Library Cache Images recorded")
         logging.debug(libImage)
+        return libImage
 
 
 
@@ -297,8 +321,11 @@ def SDLoder():
     Settingdic["LocalImageRepostory"] = configL["AppSettings"]["LocalImageRepostory"]
     Settingdic["Pathtosteam"] = configL["Steam"]["Pathtosteam"]
     Settingdic["User"] = configL["Steam"]["User"]
+    Settingdic["User"] = Settingdic["User"].split(",")
     Settingdic["SteamID"] = configL["Steam"]["SteamID"]
+    Settingdic["SteamID"] = Settingdic["SteamID"].split(",")
     Settingdic["accountID"] = configL["Steam"]["accountID"]
+    Settingdic["accountID"] = Settingdic["accountID"].split(",")
     Settingdic["Test"] = configL["AppSettings"]["Test"]
     logging.info(Settingdic)
     return Settingdic
