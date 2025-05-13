@@ -4,7 +4,7 @@ import math
 from pathlib import Path, PurePath 
 import glob
 home = Path.home()
-from PySide6.QtCore import QSize, Qt
+from PySide6.QtCore import QSize, Qt, QTimer
 from PySide6.QtWidgets import (
     QApplication,
     QDialog, 
@@ -19,6 +19,7 @@ from PySide6.QtWidgets import (
     QFileDialog,
     QLineEdit,
     QComboBox,
+    QScrollArea,
 )
 import logging
 from SettingsLoader import *
@@ -31,6 +32,7 @@ Setupdone = True
 ASUsers = {}
 game_listdic = {}
 libimagelist = []
+GDK = []
 Now = datetime.now()
 # Set up logging
 logging.basicConfig(
@@ -41,46 +43,121 @@ logging.basicConfig(
 )
 
 class MainWindow(QMainWindow):
+    """Main window for the S.A.M"""
     def __init__(self):
         super().__init__()
+        self.GLL()
         self.setWindowTitle("Steam Artwork Manger")
-        self.LibgridLayout = QGridLayout()
-        self.LibgridLayout.setSpacing(10)
-        self.LibgridLayout.setContentsMargins(0, 0, 0, 0)
-        self.LibgridLayout.setSizeConstraint(QGridLayout.SetMinimumSize)
-        self.twoByThree = twobythreeWCImage(imageP="/Users/davidofficial/Library/Application Support/Steam/appcache/librarycache/1703340/library_600x900.jpg", caption="Test")
-        self.twoByThree.setMaximumSize(300,450)
-        self.label = QLabel("Work in progress")
-        self.label.setAlignment(Qt.AlignCenter)
-        self.button = QPushButton("Get list of games")
-        self.button.clicked.connect(self.GLL)
-        self.layout = QVBoxLayout()
-        self.layout.addWidget(self.twoByThree)
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.button)
-        self.container = QWidget()
-        self.container.setLayout(self.layout)
-        self.setMinimumSize(500,500)
-        self.setBaseSize(800,700)
-        self.setCentralWidget(self.container)
+        self.setMinimumSize(600, 500)
+        self.setBaseSize(800, 700)
+
+        self.HBox = QHBoxLayout()
+        self.Grid = QGridLayout()
+        self.Scrolla = QScrollArea()
+        self.Wig = QWidget()
+
+        self.HamBurMenuL = QVBoxLayout()
+        self.items = []
+        self.columns = 3
+
+        for i in range(10):
+            TTTO = twobythreeWCImage(imageP=str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")), 
+                                     caption=self.GLD.get(GDK[i]), h=150, w=400)
+            TTTO.setMaximumSize(200, 450)
+            self.items.append(TTTO)
+        self.Grid.setSpacing(2)
+        self.Wig.setLayout(self.Grid)
+
+        self.Scrolla.setWidgetResizable(True)
+        self.Scrolla.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+        self.Scrolla.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.Scrolla.setWidget(self.Wig)
+        self.HBox.addWidget(self.Scrolla)
+        self.FWig = QWidget()
+        self.FWig.setLayout(self.HBox)
+        self.setCentralWidget(self.FWig)
+        
+        self.reflow_grid()
+        QTimer.singleShot(0, self.reflow_grid)
+
+    def resizeEvent(self, event):
+        self.reflow_grid()
+        super().resizeEvent(event)
+
+    def reflow_grid(self):
+        """Recalculate number of columns based on current width, and re-grid the items."""
+        width = self.Scrolla.viewport().width()
+        item_width = 210  # Account for widget width + spacing
+        new_columns = max(1, width // item_width)
+
+        if new_columns == self.columns:
+            return  
+
+        self.columns = new_columns
+
+        # Clear current layout
+        while self.Grid.count():
+            item = self.Grid.takeAt(0)
+            if item.widget():
+                item.widget().setParent(None)
+
+        # Re-add widgets in new layout
+        for i, widget in enumerate(self.items):
+            row = i // self.columns
+            col = i % self.columns
+            self.Grid.addWidget(widget, row, col)
+
+        self.Grid.setSpacing(4)
+
+
+        
+
+    # def __init__(self):
+    #     super().__init__()
+    #     self.Scrolla = QScrollArea()
+    #     self.Scrolla.setWidgetResizable(True)
+    #     self.Scrolla.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
+    #     self.Scrolla.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+    #     self.setWindowTitle("Steam Artwork Manger")
+    #     self.LibgridLayout = QGridLayout()
+    #     self.LibgridLayout.setSpacing(10)
+    #     self.LibgridLayout.setContentsMargins(0, 0, 0, 0)
+    #     self.LibgridLayout.setSizeConstraint(QGridLayout.SetMinimumSize)
+    #     self.twoByThree = twobythreeWCImage(imageP="/Users/davidofficial/Library/Application Support/Steam/appcache/librarycache/1703340/library_600x900.jpg", caption="Test")
+    #     self.twoByThree.setMaximumSize(300,450)
+    #     self.label = QLabel("Work in progress")
+    #     self.label.setAlignment(Qt.AlignCenter)
+    #     self.button = QPushButton("Get list of games")
+    #     self.button.clicked.connect(self.GLL)
+    #     self.layout = QVBoxLayout()
+    #     self.layout.addWidget(self.twoByThree)
+    #     self.layout.addWidget(self.label)
+    #     self.layout.addWidget(self.button)
+    #     self.container = QWidget()
+    #     self.container.setLayout(self.layout)
+    #     self.setMinimumSize(500,500)
+    #     self.setBaseSize(800,700)
+    #     self.setCentralWidget(self.container)
     def GLL(self):
         game_listdic = self.getlistofgames(Settingdic["Pathtosteam"], Settingdic["SteamID"], Settingdic["accountID"])
         libimagelist = self.SteamImagelibary(Settingdic["Pathtosteam"])
         logging.debug(len(libimagelist))
-        GDK = []
         for key in game_listdic.keys():
             GDK.append(key)
             logging.debug(GDK)
-        for i in range(5):
-            self.LibgridLayout.addWidget(twobythreeWCImage(imageP=str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")),caption="Test"), math.floor(i/3), i%3)
-        self.layout.removeWidget(self.twoByThree)
-        self.layout.removeWidget(self.label)
-        self.layout.removeWidget(self.button)
-        self.layout.addLayout(self.LibgridLayout)
-        self.layout.addWidget(self.label)
-        self.layout.addWidget(self.button)
-        self.layout.addWidget(self.twoByThree)
-        self.label.setText("List of games loaded")
+        self.GLD = game_listdic
+        logging.debug(game_listdic)
+        # for i in range(5):
+        #     self.LibgridLayout.addWidget(twobythreeWCImage(imageP=str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")),caption="Test"), math.floor(i/3), i%3)
+        # self.Scrolla.setLayout(self.LibgridLayout)
+        # self.layout.removeWidget(self.twoByThree)
+        # self.layout.removeWidget(self.label)
+        # self.layout.removeWidget(self.button)
+        # self.layout.addWidget(self.Scrolla)
+        # self.layout.addWidget(self.label)
+        # self.layout.addWidget(self.button)
+        # self.layout.addWidget(self.twoByThree)
+        # self.label.setText("List of games loaded")
         return
     def getlistofgames(self, steamDir: str, SteamID: list, accountID: list):
         
