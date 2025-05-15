@@ -57,12 +57,26 @@ class MainWindow(QMainWindow):
         self.Wig = QWidget()
 
         self.HamBurMenuL = QVBoxLayout()
+        self.GameListV = QPushButton("Game List")
+        self.GameListV.clicked.connect(self.Test)
+        self.HamBurMenuL.addWidget(self.GameListV)
+
         self.items = []
         self.columns = 3
 
-        for i in range(10):
+        for i in range(int(len(GDK))):
+            try:
+                if Path(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")).is_file():
+                    Imagepath = str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg"))
+                    logging.debug(Imagepath)
+                else:
+                    logging.warning("Image not found: " + str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")))
+            except:
+                logging.error("Oh no")
+                print("shit happen")
+                break
             TTTO = twobythreeWCImage(imageP=str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")), 
-                                     caption=self.GLD.get(GDK[i]), h=150, w=400)
+                                     caption=self.GLD.get(GDK[i]), h=150, w=400, Call=self.Test)
             TTTO.setMaximumSize(200, 450)
             self.items.append(TTTO)
         self.Grid.setSpacing(2)
@@ -72,6 +86,7 @@ class MainWindow(QMainWindow):
         self.Scrolla.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.Scrolla.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.Scrolla.setWidget(self.Wig)
+        self.HBox.addLayout(self.HamBurMenuL)
         self.HBox.addWidget(self.Scrolla)
         self.FWig = QWidget()
         self.FWig.setLayout(self.HBox)
@@ -138,6 +153,10 @@ class MainWindow(QMainWindow):
     #     self.setMinimumSize(500,500)
     #     self.setBaseSize(800,700)
     #     self.setCentralWidget(self.container)
+    def Test(self):
+        print("Test")
+        logging.info("Test")
+        return
     def GLL(self):
         game_listdic = self.getlistofgames(Settingdic["Pathtosteam"], Settingdic["SteamID"], Settingdic["accountID"])
         libimagelist = self.SteamImagelibary(Settingdic["Pathtosteam"])
