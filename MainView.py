@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QScrollArea,
 )
+from SteamIDStuff import *
 import logging
 from SettingsLoader import *
 from twoby3Image import twobythreeWCImage
@@ -72,13 +73,34 @@ class MainWindow(QMainWindow):
                 else:
                     logging.warning("Image not found: " + str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")))
             except:
-                logging.error("Oh no")
-                print("shit happen")
-                break
-            TTTO = twobythreeWCImage(imageP=str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")), 
+                try:
+                    Imagepath = str(PurePath(Settingdic["Pathtosteam"], "userdata", Settingdic["accountID"][0],"config", "grid", shorten_appid(GDK[i]) + "p.png"))
+                    logging.debug(Imagepath)
+                except:
+                    logging.error("Oh no")
+                    print("AAAHHHHHHHHHHHHHHHHHH")
+                    break
+            TTTO = twobythreeWCImage(imageP=Imagepath, 
                                      caption=self.GLD.get(GDK[i]), h=150, w=400, Call=self.Test)
             TTTO.setMaximumSize(200, 450)
             self.items.append(TTTO)
+        for i in range(len(self.libimagelistt)):
+            if GDK.__contains__(self.libimagelistt[i]):
+                logging.debug("Image already found: " + str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", self.libimagelistt[i], "library_600x900.jpg")))
+                continue
+            else:
+                try:
+                    Imagepath = str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", self.libimagelistt[i], "library_600x900.jpg"))
+                    logging.debug(Imagepath)
+                except:
+
+                    logging.warning("Image not found: " + str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", self.libimagelistt[i], "library_600x900.jpg")))
+                    continue
+            TTTO = twobythreeWCImage(imageP=Imagepath, 
+                                     caption=self.libimagelistt[i], h=150, w=400, Call=self.Test)
+            TTTO.setMaximumSize(200, 450)
+            self.items.append(TTTO)
+                
         self.Grid.setSpacing(2)
         self.Wig.setLayout(self.Grid)
 
@@ -159,12 +181,14 @@ class MainWindow(QMainWindow):
         return
     def GLL(self):
         game_listdic = self.getlistofgames(Settingdic["Pathtosteam"], Settingdic["SteamID"], Settingdic["accountID"])
-        libimagelist = self.SteamImagelibary(Settingdic["Pathtosteam"])
+        self.libimagelistt = self.SteamImagelibary(Settingdic["Pathtosteam"])
         logging.debug(len(libimagelist))
         for key in game_listdic.keys():
             GDK.append(key)
             logging.debug(GDK)
         self.GLD = game_listdic
+
+
         logging.debug(game_listdic)
         # for i in range(5):
         #     self.LibgridLayout.addWidget(twobythreeWCImage(imageP=str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")),caption="Test"), math.floor(i/3), i%3)
@@ -455,3 +479,4 @@ if __name__ == "__main__":
         SAMwindowMain = MainWindow()
         SAMwindowMain.show()
     app.exec()
+# (OvO) hello
