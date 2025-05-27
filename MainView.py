@@ -21,6 +21,7 @@ from PySide6.QtWidgets import (
     QComboBox,
     QScrollArea,
 )
+from PySide6.QtGui import QPixmap
 from SteamIDStuff import *
 import logging
 from SettingsLoader import *
@@ -44,8 +45,10 @@ logging.basicConfig(
 )
 
 class MainWindow(QMainWindow):
+    
     """Main window for the S.A.M"""
     def __init__(self):
+        self.vt = False
         super().__init__()
         self.GLL()
         self.setWindowTitle("Steam Artwork Manger")
@@ -55,12 +58,17 @@ class MainWindow(QMainWindow):
         self.HBox = QHBoxLayout()
         self.Grid = QGridLayout()
         self.Scrolla = QScrollArea()
+        self.MainWindow = QVBoxLayout()
         self.Wig = QWidget()
 
         self.HamBurMenuL = QVBoxLayout()
         self.GameListV = QPushButton("Game List")
         self.GameListV.clicked.connect(self.Test)
+        self.StetinlisV = QPushButton("Settings")
+        self.StetinlisV.clicked.connect(self.Test)
         self.HamBurMenuL.addWidget(self.GameListV)
+        self.HamBurMenuL.addWidget(self.StetinlisV)
+        self.HamBurMenuL.setAlignment(Qt.AlignmentFlag.AlignTop)
 
         self.items = []
         self.columns = 3
@@ -75,31 +83,32 @@ class MainWindow(QMainWindow):
             except:
                 try:
                     Imagepath = str(PurePath(Settingdic["Pathtosteam"], "userdata", Settingdic["accountID"][0],"config", "grid", shorten_appid(GDK[i]) + "p.png"))
+                    logging.debug("Image found in userdata: " + Imagepath) 
                     logging.debug(Imagepath)
                 except:
                     logging.error("Oh no")
                     print("AAAHHHHHHHHHHHHHHHHHH")
                     break
             TTTO = twobythreeWCImage(imageP=Imagepath, 
-                                     caption=self.GLD.get(GDK[i]), h=150, w=400, Call=self.Test)
+                                     caption=self.GLD.get(GDK[i]), h=150, w=400, Call=self.LoadGameinfoView(GDK[i], self.GLD.get(GDK[i]), Imagepath))
             TTTO.setMaximumSize(200, 450)
             self.items.append(TTTO)
-        for i in range(len(self.libimagelistt)):
-            if GDK.__contains__(self.libimagelistt[i]):
-                logging.debug("Image already found: " + str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", self.libimagelistt[i], "library_600x900.jpg")))
-                continue
-            else:
-                try:
-                    Imagepath = str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", self.libimagelistt[i], "library_600x900.jpg"))
-                    logging.debug(Imagepath)
-                except:
+        # for i in range(len(self.libimagelistt)):
+        #     if GDK.__contains__(self.libimagelistt[i]):
+        #         logging.debug("Image already found: " + str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", self.libimagelistt[i], "library_600x900.jpg")))
+        #         continue
+        #     else:
+        #         try:
+        #             Imagepath = str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", self.libimagelistt[i], "library_600x900.jpg"))
+        #             logging.debug(Imagepath)
+        #         except:
 
-                    logging.warning("Image not found: " + str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", self.libimagelistt[i], "library_600x900.jpg")))
-                    continue
-            TTTO = twobythreeWCImage(imageP=Imagepath, 
-                                     caption=self.libimagelistt[i], h=150, w=400, Call=self.Test)
-            TTTO.setMaximumSize(200, 450)
-            self.items.append(TTTO)
+        #             logging.warning("Image not found: " + str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", self.libimagelistt[i], "library_600x900.jpg")))
+        #             continue
+        #     TTTO = twobythreeWCImage(imageP=Imagepath, 
+        #                              caption=self.libimagelistt[i], h=150, w=400, Call=self.Test)
+        #     TTTO.setMaximumSize(200, 450)
+        #     self.items.append(TTTO)
                 
         self.Grid.setSpacing(2)
         self.Wig.setLayout(self.Grid)
@@ -108,12 +117,13 @@ class MainWindow(QMainWindow):
         self.Scrolla.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
         self.Scrolla.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.Scrolla.setWidget(self.Wig)
+        self.MainWindow.addWidget(self.Scrolla)
         self.HBox.addLayout(self.HamBurMenuL)
-        self.HBox.addWidget(self.Scrolla)
+        self.HBox.addLayout(self.MainWindow)
         self.FWig = QWidget()
         self.FWig.setLayout(self.HBox)
         self.setCentralWidget(self.FWig)
-        
+        self.vt = True
         self.reflow_grid()
         QTimer.singleShot(0, self.reflow_grid)
 
@@ -147,8 +157,6 @@ class MainWindow(QMainWindow):
         self.Grid.setSpacing(4)
 
 
-        
-
     # def __init__(self):
     #     super().__init__()
     #     self.Scrolla = QScrollArea()
@@ -179,6 +187,24 @@ class MainWindow(QMainWindow):
         print("Test")
         logging.info("Test")
         return
+    def LoadGameinfoView(self, gameID: str, gameName: str, gameImage: str):
+            if not self.vt:
+                logging.error("MainWindow not initialized")
+                return
+            self.MainWindow.removeWidget(self.Scrolla)
+            MAINV = QVBoxLayout()
+            Row1 = QHBoxLayout()
+
+            self.GameImage = QLabel()
+            self.GameImage.setPixmap(QPixmap(gameImage))
+            self.GameName = QLabel(gameName)
+            Row1.addWidget(self.GameName)
+            Row1.addWidget(self.GameImage)
+            MAINV.addLayout(Row1)
+            self.MainWindow.addLayout(MAINV)
+
+
+
     def GLL(self):
         game_listdic = self.getlistofgames(Settingdic["Pathtosteam"], Settingdic["SteamID"], Settingdic["accountID"])
         self.libimagelistt = self.SteamImagelibary(Settingdic["Pathtosteam"])
@@ -275,9 +301,9 @@ class setupWindows(QMainWindow):
         DPS = SUOS()
         self.setWindowTitle("S.A.M Setup")
         self.labelOne = QLabel("The Path to steam")
-        self.labelOne.setAlignment(Qt.AlignCenter)
+        self.labelOne.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.labelTwo = QLabel("The path to your steam installaion. Please make sure you include to full path to the steam folder eg. " + DPS)
-        self.labelTwo.setAlignment(Qt.AlignCenter)
+        self.labelTwo.setAlignment(Qt.AlignmentFlag.AlignCenter)
         self.labelTwo.setWordWrap(True)
         LOF = self.labelOne.font()
         LOF.setPointSize(20)
