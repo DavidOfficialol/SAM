@@ -93,22 +93,6 @@ class MainWindow(QMainWindow):
                                      caption=self.GLD.get(GDK[i]), h=150, w=400, Call=self.LoadGameinfoView(GDK[i], self.GLD.get(GDK[i]), Imagepath))
             TTTO.setMaximumSize(200, 450)
             self.items.append(TTTO)
-        # for i in range(len(self.libimagelistt)):
-        #     if GDK.__contains__(self.libimagelistt[i]):
-        #         logging.debug("Image already found: " + str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", self.libimagelistt[i], "library_600x900.jpg")))
-        #         continue
-        #     else:
-        #         try:
-        #             Imagepath = str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", self.libimagelistt[i], "library_600x900.jpg"))
-        #             logging.debug(Imagepath)
-        #         except:
-
-        #             logging.warning("Image not found: " + str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", self.libimagelistt[i], "library_600x900.jpg")))
-        #             continue
-        #     TTTO = twobythreeWCImage(imageP=Imagepath, 
-        #                              caption=self.libimagelistt[i], h=150, w=400, Call=self.Test)
-        #     TTTO.setMaximumSize(200, 450)
-        #     self.items.append(TTTO)
                 
         self.Grid.setSpacing(2)
         self.Wig.setLayout(self.Grid)
@@ -156,33 +140,6 @@ class MainWindow(QMainWindow):
 
         self.Grid.setSpacing(4)
 
-
-    # def __init__(self):
-    #     super().__init__()
-    #     self.Scrolla = QScrollArea()
-    #     self.Scrolla.setWidgetResizable(True)
-    #     self.Scrolla.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-    #     self.Scrolla.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-    #     self.setWindowTitle("Steam Artwork Manger")
-    #     self.LibgridLayout = QGridLayout()
-    #     self.LibgridLayout.setSpacing(10)
-    #     self.LibgridLayout.setContentsMargins(0, 0, 0, 0)
-    #     self.LibgridLayout.setSizeConstraint(QGridLayout.SetMinimumSize)
-    #     self.twoByThree = twobythreeWCImage(imageP="/Users/davidofficial/Library/Application Support/Steam/appcache/librarycache/1703340/library_600x900.jpg", caption="Test")
-    #     self.twoByThree.setMaximumSize(300,450)
-    #     self.label = QLabel("Work in progress")
-    #     self.label.setAlignment(Qt.AlignCenter)
-    #     self.button = QPushButton("Get list of games")
-    #     self.button.clicked.connect(self.GLL)
-    #     self.layout = QVBoxLayout()
-    #     self.layout.addWidget(self.twoByThree)
-    #     self.layout.addWidget(self.label)
-    #     self.layout.addWidget(self.button)
-    #     self.container = QWidget()
-    #     self.container.setLayout(self.layout)
-    #     self.setMinimumSize(500,500)
-    #     self.setBaseSize(800,700)
-    #     self.setCentralWidget(self.container)
     def Test(self):
         print("Test")
         logging.info("Test")
@@ -216,17 +173,6 @@ class MainWindow(QMainWindow):
 
 
         logging.debug(game_listdic)
-        # for i in range(5):
-        #     self.LibgridLayout.addWidget(twobythreeWCImage(imageP=str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")),caption="Test"), math.floor(i/3), i%3)
-        # self.Scrolla.setLayout(self.LibgridLayout)
-        # self.layout.removeWidget(self.twoByThree)
-        # self.layout.removeWidget(self.label)
-        # self.layout.removeWidget(self.button)
-        # self.layout.addWidget(self.Scrolla)
-        # self.layout.addWidget(self.label)
-        # self.layout.addWidget(self.button)
-        # self.layout.addWidget(self.twoByThree)
-        # self.label.setText("List of games loaded")
         return
     def getlistofgames(self, steamDir: str, SteamID: list, accountID: list):
         
