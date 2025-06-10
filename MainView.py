@@ -1,4 +1,5 @@
 import sys
+import random
 import vdf
 import math
 from pathlib import Path, PurePath 
@@ -69,37 +70,51 @@ class MainWindow(QMainWindow):
         self.HamBurMenuL.addWidget(self.GameListV)
         self.HamBurMenuL.addWidget(self.StetinlisV)
         self.HamBurMenuL.setAlignment(Qt.AlignmentFlag.AlignTop)
+        self.HamBurMenuL.setSpacing(10)
 
         self.items = []
         self.columns = 3
 
         for i in range(int(len(GDK))):
+            Imagepath = None
+            caption = None
             try:
                 if Path(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")).is_file():
                     Imagepath = str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg"))
                     logging.debug(Imagepath)
                 else:
                     logging.warning("Image not found: " + str(PurePath(Settingdic["Pathtosteam"], "appcache", "librarycache", GDK[i], "library_600x900.jpg")))
-            except:
+            except Exception as e:
+                logging.error(f"Exception in main image path: {e}")
+            if not Imagepath:
                 try:
-                    Imagepath = str(PurePath(Settingdic["Pathtosteam"], "userdata", Settingdic["accountID"][0],"config", "grid", shorten_appid(GDK[i]) + "p.png"))
-                    logging.debug("Image found in userdata: " + Imagepath) 
-                    logging.debug(Imagepath)
-                except:
-                    logging.error("Oh no")
-                    print("AAAHHHHHHHHHHHHHHHHHH")
-                    break
-            TTTO = twobythreeWCImage(imageP=Imagepath, 
-                                     caption=self.GLD.get(GDK[i]), h=150, w=400, Call=self.LoadGameinfoView(GDK[i], self.GLD.get(GDK[i]), Imagepath))
+                    if Path(PurePath(Settingdic["Pathtosteam"], "userdata", Settingdic["accountID"][0],"config", "grid", shorten_appid(GDK[i]) + "p.png")).is_file():
+                        Imagepath = str(PurePath(Settingdic["Pathtosteam"], "userdata", Settingdic["accountID"][0],"config", "grid", shorten_appid(GDK[i]) + "p.png"))
+                        logging.debug("Image found in userdata: " + Imagepath) 
+                    else:
+                        logging.warning("Image not found in userdata: " + str(PurePath(Settingdic["Pathtosteam"], "userdata", Settingdic["accountID"][0],"config", "grid", shorten_appid(GDK[i]) + "p.png")))
+                        Imagepath = ""
+                except Exception as e:
+                    logging.error(f"Exception in fallback image path: {e}")
+                    
+                    Imagepath = ""  # fallback to empty string
+            # Always get caption safely
+            caption = self.GLD.get(GDK[i], "Unknown") if isinstance(self.GLD, dict) else str(GDK[i])
+            TTTO = twobythreeWCImage(
+                imageP=Imagepath, 
+                caption=caption, 
+                h=150, 
+                w=400, 
+                Call=(lambda gameID=GDK[i], gameName=caption, imagePath=Imagepath: self.LGIV(gameID, gameName, imagePath))
+            )
             TTTO.setMaximumSize(200, 450)
             self.items.append(TTTO)
-                
         self.Grid.setSpacing(2)
         self.Wig.setLayout(self.Grid)
 
         self.Scrolla.setWidgetResizable(True)
-        self.Scrolla.setVerticalScrollBarPolicy(Qt.ScrollBarAlwaysOn)
-        self.Scrolla.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.Scrolla.setVerticalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOn)
+        self.Scrolla.setHorizontalScrollBarPolicy(Qt.ScrollBarPolicy.ScrollBarAlwaysOff)
         self.Scrolla.setWidget(self.Wig)
         self.MainWindow.addWidget(self.Scrolla)
         self.HBox.addLayout(self.HamBurMenuL)
@@ -107,9 +122,9 @@ class MainWindow(QMainWindow):
         self.FWig = QWidget()
         self.FWig.setLayout(self.HBox)
         self.setCentralWidget(self.FWig)
-        self.vt = True
         self.reflow_grid()
         QTimer.singleShot(0, self.reflow_grid)
+        self.vt = True
 
     def resizeEvent(self, event):
         self.reflow_grid()
@@ -140,25 +155,32 @@ class MainWindow(QMainWindow):
 
         self.Grid.setSpacing(4)
 
-    def Test(self):
+    def Test(self,gameID: str, gameName: str, gameImage: str):
         print("Test")
         logging.info("Test")
         return
-    def LoadGameinfoView(self, gameID: str, gameName: str, gameImage: str):
+    def LGIV(self, gameID: str, gameName: str, gameImage: str):
             if not self.vt:
+                print(str(datetime.now()) + "MainWindow not initialized")
                 logging.error("MainWindow not initialized")
                 return
-            self.MainWindow.removeWidget(self.Scrolla)
-            MAINV = QVBoxLayout()
-            Row1 = QHBoxLayout()
+            self.LoadGameinfoView(gameID, gameName, gameImage)
 
-            self.GameImage = QLabel()
-            self.GameImage.setPixmap(QPixmap(gameImage))
-            self.GameName = QLabel(gameName)
-            Row1.addWidget(self.GameName)
-            Row1.addWidget(self.GameImage)
-            MAINV.addLayout(Row1)
-            self.MainWindow.addLayout(MAINV)
+    def LoadGameinfoView(self, gameID: str, gameName: str, gameImage: str):
+        print("Loading game info view for " + str(gameID))
+        self.MainWindow.removeWidget(self.Scrolla)
+        self.Scrolla.setParent(None)  # Properly remove from parent
+        self.Scrolla.hide()           # Hide in case it's still visible
+        MAINV = QVBoxLayout()
+        Row1 = QHBoxLayout()
+
+        self.GameImage = QLabel()
+        self.GameImage.setPixmap(QPixmap(gameImage))
+        self.GameName = QLabel(gameName)
+        Row1.addWidget(self.GameName)
+        Row1.addWidget(self.GameImage)
+        MAINV.addLayout(Row1)
+        self.MainWindow.addLayout(MAINV)
 
 
 
